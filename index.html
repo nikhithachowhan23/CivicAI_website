@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicAI — Smart Civic Issue Reporting</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --navy:#12395a; --blue:#1685c9; --blue2:#0f6fa9; --bg:#eef5f9;
+  --card:#fff; --text:#17324d; --muted:#63778a; --line:#d8e4ec;
+  --danger:#e34b4b; --warning:#e99b27; --success:#38a169;
+}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{
+  min-height:330px;padding:28px 7% 70px;color:#fff;position:relative;overflow:visible;
+  background:linear-gradient(120deg,#103b59,#176b91 55%,#214e69);
+}
+header:after{content:"";position:absolute;inset:0;opacity:.12;
+  background:radial-gradient(circle at 20% 20%,#fff 0 2px,transparent 3px),
+             linear-gradient(135deg,transparent 40%,#fff 41%,transparent 42%);
+}
+.top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:25px;font-weight:800;letter-spacing:.3px}
+.brand span{font-size:28px;margin-right:8px}
+.hero{position:relative;z-index:2;margin-top:62px;max-width:720px}
+.hero h1{font-size:43px;line-height:1.08;margin:0 0 14px}
+.hero p{font-size:18px;line-height:1.55;margin:0;color:#e8f5fb}
+.lang-side{
+  position:fixed;right:0;top:145px;z-index:20;background:white;border:1px solid var(--line);
+  border-right:0;border-radius:14px 0 0 14px;box-shadow:0 8px 25px #17324d22;
+  width:58px;transition:.25s;overflow:hidden
+}
+.lang-side:hover{width:170px}
+.lang-title{padding:13px 15px;font-weight:800;white-space:nowrap;border-bottom:1px solid var(--line)}
+.lang-side select{margin:10px;width:148px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#f7fafc}
+.container{width:min(1180px,92%);margin:-42px auto 50px;position:relative;z-index:5}
+.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:22px;align-items:start}
+.card{background:var(--card);border-radius:18px;box-shadow:0 8px 28px #17324d14;padding:24px}
+.report-card{margin-top:18px}
+.dashboard-card{margin-top:18px}
+.card h2{margin:0 0 18px;font-size:25px;color:var(--navy)}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+button,.btn{border:0;border-radius:10px;padding:12px 14px;font-weight:750;cursor:pointer}
+.primary{background:var(--blue);color:white}.secondary{background:#edf5f9;color:var(--navy)}
+button:hover{filter:brightness(.97);transform:translateY(-1px)}
+label{display:block;font-weight:700;font-size:14px;margin:14px 0 7px}
+textarea,input,select{width:100%;padding:13px 14px;border:1px solid #cbdbe5;border-radius:10px;font:inherit;background:#fff;color:var(--text)}
+textarea{min-height:105px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.submit{margin-top:17px;width:100%;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:#f1f6f9;border-radius:13px;padding:16px}
+.stat b{display:block;font-size:29px;margin-top:5px}
+.stat small{font-weight:700;color:var(--muted)}
+.dot{font-size:14px}
+.complaints{margin-top:20px}
+.issue{padding:13px 15px;border-left:4px solid var(--blue);background:#f5f9fb;border-radius:10px;margin-top:10px}
+.issue strong{display:block}.status{display:inline-block;font-size:12px;background:#e3f0f7;padding:4px 8px;border-radius:20px;margin-top:5px}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.feature{border:1px solid var(--line);border-radius:12px;padding:14px}
+.feature b{display:block;margin-bottom:5px}
+.note{font-size:13px;color:var(--muted);margin-top:9px}
+.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#163c58;color:white;padding:12px 18px;border-radius:10px;display:none;z-index:50}
+footer{text-align:center;color:var(--muted);padding:10px 20px 35px}
+@media(max-width:850px){
+  .grid{grid-template-columns:1fr}.hero h1{font-size:35px}.actions{grid-template-columns:1fr}
+  .form-row,.features{grid-template-columns:1fr}.container{margin-top:-25px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div class="brand"><span>🏙️</span>CivicAI</div>
+  </div>
+  <div class="hero">
+    <h1 id="heroTitle">Report. Prioritize. Resolve.</h1>
+    <p id="heroText">A simple AI-powered platform that helps citizens report civic problems and helps authorities resolve them faster.</p>
+  </div>
+</header>
+
+<aside class="lang-side" aria-label="Language selector">
+  <div class="lang-title">🌐 <span>Language</span></div>
+  <select id="language" onchange="changeLanguage(this.value)">
+    <option value="en">English</option>
+    <option value="te">తెలుగు</option>
+    <option value="hi">हिन्दी</option>
+  </select>
+</aside>
+
+<main class="container">
+  <div class="grid">
+
+    <section class="card report-card">
+      <h2>📢 <span id="reportTitle">Report a Civic Issue</span></h2>
+      <div class="actions">
+        <button class="primary" onclick="startVoice()">🎙️ Report by Voice</button>
+        <button class="secondary" onclick="document.getElementById('photo').click()">📷 Add Photo</button>
+        <button class="secondary" onclick="getLocation()">📍 Use Location</button>
+      </div>
+      <input id="photo" type="file" accept="image/*" hidden onchange="photoAdded()">
+
+      <label for="description">Describe the problem</label>
+      <textarea id="description" placeholder="Example: Large pothole near the school..."></textarea>
+
+      <div class="form-row">
+        <div>
+          <label for="type">Issue type</label>
+          <select id="type">
+            <option>Pothole</option><option>Streetlight</option><option>Water Supply</option>
+            <option>Drainage</option><option>Garbage</option><option>Road Damage</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="priority">Priority</label>
+          <select id="priority">
+            <option>Critical</option><option>High</option><option selected>Medium</option><option>Low</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="location">Location / landmark</label>
+      <input id="location" placeholder="Example: Near main gate, Government School">
+
+      <button class="primary submit" onclick="submitComplaint()">Submit Complaint</button>
+      <div class="note">Your complaint is organized by issue type, location and priority so authorities can act faster.</div>
+    </section>
+
+    <section class="card dashboard-card">
+      <h2>📊 Smart Dashboard</h2>
+      <div class="stats">
+        <div class="stat"><span class="dot">🔴 Critical</span><b id="critical">12</b><small>Needs immediate attention</small></div>
+        <div class="stat"><span class="dot">🟠 High</span><b id="high">27</b><small>High priority</small></div>
+        <div class="stat"><span class="dot">🟡 Medium</span><b id="medium">41</b><small>Under monitoring</small></div>
+        <div class="stat"><span class="dot">🟢 Resolved</span><b id="resolved">86</b><small>Successfully resolved</small></div>
+      </div>
+
+      <div class="complaints">
+        <h2>📋 My Complaints</h2>
+        <div id="complaintList">
+          <div class="issue"><strong>C1024 — Pothole</strong><span class="status">🔵 Assigned</span> Near college main gate</div>
+          <div class="issue"><strong>C1018 — Streetlight</strong><span class="status">☑ Resolved</span> 2nd Cross Road</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>💡 Civic Resolution Features</h2>
+      <div class="features">
+        <div class="feature"><b>📸 Photo-based reporting</b><span>Attach a photo to provide clear evidence of the issue.</span></div>
+        <div class="feature"><b>🔎 Duplicate detection</b><span>Group nearby complaints about the same problem.</span></div>
+        <div class="feature"><b>🚦 Smart priority</b><span>Use severity, location and public impact to prioritize issues.</span></div>
+        <div class="feature"><b>🏢 Department routing</b><span>Route complaints to the appropriate civic department.</span></div>
+        <div class="feature"><b>🗺️ Hotspot awareness</b><span>Identify locations where civic problems repeatedly occur.</span></div>
+        <div class="feature"><b>🎙️ Voice reporting</b><span>Citizens can speak instead of typing their complaint.</span></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>CivicAI • Community-first civic issue resolution platform</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const translations={
+  en:{title:"Report a Civic Issue",hero:"Report. Prioritize. Resolve.",text:"A simple AI-powered platform that helps citizens report civic problems and helps authorities resolve them faster."},
+  te:{title:"పౌర సమస్యను నివేదించండి",hero:"నివేదించండి. ప్రాధాన్యత ఇవ్వండి. పరిష్కరించండి.",text:"పౌరులు సమస్యలను నివేదించడానికి మరియు అధికారులు వాటిని వేగంగా పరిష్కరించడానికి సహాయపడే స్మార్ట్ వేదిక."},
+  hi:{title:"नागरिक समस्या की रिपोर्ट करें",hero:"रिपोर्ट करें। प्राथमिकता दें। समाधान करें।",text:"एक स्मार्ट प्लेटफ़ॉर्म जो नागरिकों को समस्याएँ दर्ज करने और अधिकारियों को उन्हें जल्दी हल करने में मदद करता है।"}
+};
+function changeLanguage(lang){
+  const t=translations[lang]; document.getElementById("reportTitle").textContent=t.title;
+  document.getElementById("heroTitle").textContent=t.hero; document.getElementById("heroText").textContent=t.text;
+  showToast(lang==="te"?"భాష మార్చబడింది":lang==="hi"?"भाषा बदल दी गई":"Language changed");
+}
+function showToast(msg){const x=document.getElementById("toast");x.textContent=msg;x.style.display="block";setTimeout(()=>x.style.display="none",2200)}
+function photoAdded(){showToast("Photo attached successfully")}
+function getLocation(){
+  if(!navigator.geolocation){showToast("Location is not supported by this browser");return}
+  navigator.geolocation.getCurrentPosition(p=>{
+    document.getElementById("location").value=`GPS: ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
+    showToast("Location added");
+  },()=>showToast("Unable to access location"));
+}
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast("Voice input is not supported in this browser");return}
+  const r=new SR(); r.lang=document.getElementById("language").value==="te"?"te-IN":document.getElementById("language").value==="hi"?"hi-IN":"en-IN";
+  r.interimResults=false;r.maxAlternatives=1;
+  showToast("Listening... Please speak your complaint");
+  r.onresult=e=>{document.getElementById("description").value=e.results[0][0].transcript;showToast("Voice complaint captured")};
+  r.onerror=()=>showToast("Could not capture voice. Please try again");
+  r.start();
+}
+function submitComplaint(){
+  const desc=document.getElementById("description").value.trim();
+  const type=document.getElementById("type").value;
+  const loc=document.getElementById("location").value.trim()||"Location not provided";
+  const priority=document.getElementById("priority").value;
+  if(!desc){showToast("Please describe the problem first");return}
+  const id="C"+(1025+document.querySelectorAll("#complaintList .issue").length);
+  const div=document.createElement("div");div.className="issue";
+  div.innerHTML=`<strong>${id} — ${type}</strong><span class="status">🔵 Submitted</span> ${loc}`;
+  document.getElementById("complaintList").prepend(div);
+  const el=priority.toLowerCase(); if(["critical","high","medium"].includes(el)) document.getElementById(el).textContent++;
+  document.getElementById("description").value="";document.getElementById("location").value="";
+  showToast("Complaint submitted successfully");
+}
+</script>
+</body>
+</html>
